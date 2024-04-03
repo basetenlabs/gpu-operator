@@ -408,6 +408,13 @@ func (r *ClusterPolicyReconciler) SetupWithManager(ctx context.Context, mgr ctrl
 		return fmt.Errorf("failed to add index key: %w", err)
 	}
 
+	// [BASETEN]
+	// AddToScheme modifies the map in the Scheme object. This write causes race conditions thus
+	// should not be called once the controller starts using (read) the Scheme.
+	//
+	// The controller-runtime pattern is to build the scheme as part of manager/controller setup.
+	// https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/scheme
+	// "in the entrypoint for your manager, assemble the scheme containing exactly the types you need, panicing if scheme registration failed"
 	utilruntime.Must(promv1.AddToScheme(r.Scheme))
 	utilruntime.Must(secv1.Install(r.Scheme))
 	utilruntime.Must(apiconfigv1.Install(r.Scheme))

@@ -91,6 +91,11 @@ gpu-operator:
 	CGO_ENABLED=0 GOOS=$(GOOS) \
 		go build -ldflags "-s -w -X $(VERSION_PKG).gitCommit=$(GIT_COMMIT) -X $(VERSION_PKG).version=$(VERSION)" -o gpu-operator ./cmd/gpu-operator/...
 
+gpu-operator-race:
+	CGO_ENABLED=1 GOOS=$(GOOS) CGO_LDFLAGS="-static" \
+		go build -ldflags "-s -w -X $(VERSION_PKG).gitCommit=$(GIT_COMMIT) -X $(VERSION_PKG).version=$(VERSION)" -o gpu-operator ./cmd/gpu-operator/...
+
+
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate check manifests
 	go run ./cmd/gpu-operator/...

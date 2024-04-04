@@ -23,15 +23,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	secv1 "github.com/openshift/api/security/v1"
-	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-
 	gpuv1 "github.com/NVIDIA/gpu-operator/api/v1"
 
 	"github.com/go-logr/logr"
 	apiconfigv1 "github.com/openshift/api/config/v1"
-	apiimagev1 "github.com/openshift/api/image/v1"
 	configv1 "github.com/openshift/client-go/config/clientset/versioned/typed/config/v1"
 	"golang.org/x/mod/semver"
 	corev1 "k8s.io/api/core/v1"
@@ -782,11 +777,6 @@ func (n *ClusterPolicyController) init(ctx context.Context, reconciler *ClusterP
 		}
 		n.k8sVersion = k8sVersion
 		n.rec.Log.Info("Kubernetes version detected", "version", k8sVersion)
-
-		utilruntime.Must(promv1.AddToScheme(reconciler.Scheme))
-		utilruntime.Must(secv1.Install(reconciler.Scheme))
-		utilruntime.Must(apiconfigv1.Install(reconciler.Scheme))
-		utilruntime.Must(apiimagev1.Install(reconciler.Scheme))
 
 		n.operatorMetrics = initOperatorMetrics(n)
 		n.rec.Log.Info("Operator metrics initialized.")

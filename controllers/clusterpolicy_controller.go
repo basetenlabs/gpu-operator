@@ -21,6 +21,10 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	apiconfigv1 "github.com/openshift/api/config/v1"
+	apiimagev1 "github.com/openshift/api/image/v1"
+	secv1 "github.com/openshift/api/security/v1"
+	promv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +32,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/util/workqueue"
 
 	"time"
@@ -402,6 +407,18 @@ func (r *ClusterPolicyReconciler) SetupWithManager(ctx context.Context, mgr ctrl
 	}); err != nil {
 		return fmt.Errorf("failed to add index key: %w", err)
 	}
+
+	// [BASETEN]
+	// AddToScheme modifies the map in the Scheme object. This write causes race conditions thus
+	// should not be called once the controller starts using (read) the Scheme.
+	//
+	// The controller-runtime pattern is to build the scheme as part of manager/controller setup.
+	// https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/scheme
+	// "in the entrypoint for your manager, assemble the scheme containing exactly the types you need, panicing if scheme registration failed"
+	utilruntime.Must(promv1.AddToScheme(r.Scheme))
+	utilruntime.Must(secv1.Install(r.Scheme))
+	utilruntime.Must(apiconfigv1.Install(r.Scheme))
+	utilruntime.Must(apiimagev1.Install(r.Scheme))
 
 	return nil
 }
